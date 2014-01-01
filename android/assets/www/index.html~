@@ -1,0 +1,346 @@
+<!DOCTYPE HTML>
+
+<html>
+
+  <head>
+
+    <meta name="viewport" content="width=480;height:800;user-scalable=no" />
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+    <title>PhoneGap</title>
+		<link rel="stylesheet" href="jquery.mobile-1.0b2.min.css"" />
+		<script src="jquery-1.6.2.min.js"></script>
+		<script src="jquery.mobile-1.0b2.min.js"></script>
+                <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+                <script src="jquery.validate.min.js"></script>
+                <script src="jquery.validate.js"></script>
+                <script src="additional-methods.js"></script>
+                <script src="additional-methods.min.js"></script> 
+                 
+    <script type="text/javascript" charset="utf-8">
+
+    var pictureSource;   // picture source
+    var destinationType; // sets the format of returned value 
+
+    // Wait for PhoneGap to connect with the device
+    //
+    document.addEventListener("deviceready",onDeviceReady,false);
+
+    // PhoneGap is ready to be used!
+    //
+    function onDeviceReady() {
+        pictureSource=navigator.camera.PictureSourceType;
+        destinationType=navigator.camera.DestinationType;
+        
+        window.uicontrols.createTabBar();
+        window.uicontrols.createTabBarItem("btn1","My button","icon.png",{ onSelect: function() { callback('my') } })
+		window.uicontrols.createTabBarItem("btn2","My Favourite","tabButton:Favorites");
+		window.uicontrols.showTabBar();
+		window.uicontrols.showTabBarItems("btn1", "btn2");
+
+    }
+	//conect to network
+	
+	
+    // Called when a photo is successfully retrieved
+    //
+    function cameraCallback(imageData) {
+      // Uncomment to view the base64 encoded image data
+      // console.log(imageData);
+
+      // Get image handle
+      //
+      var smallImage = document.getElementById('smallImage');
+
+      // Unhide image elements
+      //
+      smallImage.style.display = 'block';
+
+      // Show the captured photo
+      // The inline CSS rules are used to resize the image
+      //
+      smallImage.src = "data:image/jpeg;base64," + imageData;
+    }
+
+    // Called when a photo is successfully retrieved
+    //
+    function onPhotoURISuccess(imageURI) {
+      // Uncomment to view the image file URI 
+       console.log(imageURI);
+
+      // Get image handle
+      //
+      var largeImage = document.getElementById('largeImage');
+
+      // Unhide image elements
+      //
+      largeImage.style.display = 'block';
+
+      // Show the captured photo
+      // The inline CSS rules are used to resize the image
+      //
+      largeImage.src = imageURI;
+    }
+
+    // A button will call this function
+    //
+    function capturePhoto() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(cameraCallback, onFail, { quality: 50 });
+    }
+
+    // A button will call this function
+    //
+    function capturePhotoEdit() {
+      // Take picture using device camera, allow edit, and retrieve image as base64-encoded string  
+      navigator.camera.getPicture(cameraCallback, onFail, { quality: 20, allowEdit: true }); 
+    }
+
+    // A button will call this function
+    //
+    function getPhoto(source) {
+      // Retrieve image file location from specified source
+      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50, destinationType: destinationType.FILE_URI,sourceType: source });
+    }
+
+    // Called if something bad happens.
+    // 
+    function onFail(message) {
+      alert('Failed because: ' + message);
+    }
+    </script>
+	
+	<script language="javascript" type="text/javascript">
+		var username;
+
+		function check() 
+		{		
+		  //alert('fsdf');
+		  username= $('#user').val();
+		  var pass= $('#password').val();	
+		  
+			  $.get('http://192.168.1.200/phonegap/?q=phonegap_login/'+username+'/'+pass,
+				  function(data)
+				  {
+					  //alert(data);
+					  if(data=="1")alert('Login successful!');
+					  else alert('Login fail!');
+				  });
+		}
+		function get_gallery() 
+		{				 		  
+			var gallery = $.get('http://192.168.1.200/phonegap/?q=select_gallery/'+username+'/'+pass;
+			var subgallery = gallery.substring(1);
+				
+		}
+			
+		function val()
+		{
+			alert("no");
+		}
+		$(document).ready(
+			function ()
+			{
+				$('#_login_form').validate();
+				$('#_account_form').validate();
+				$('#capture').hide();
+				$('#gallery').hide();
+				$('#account').show();
+				$('#login_form').show();
+			
+				$('#account_a').click(
+					function()
+					{
+						$('#account').show();
+						$('#capture').hide();
+						$('#gallery').hide();
+					}
+				);
+				$('#capture_a').click(
+					function()
+					{
+						
+						$('#account').hide();
+						$('#capture').show();
+						$('#gallery').hide();
+					}
+				);
+				$('#gallery_a').click(
+					function()
+					{
+						$('#account').hide();
+						$('#capture').hide();
+						$('#gallery').show();
+					}
+				);
+				
+				$('#register_button').click(
+					function()
+					{
+						$('#login_form').hide();
+						$('#register_form').show();						
+					}
+				);
+				
+				$('#back_button').click(
+					function()
+					{
+						$('#login_form').show();
+						$('#register_form').hide();						
+					}
+				);
+				
+				
+				
+			}
+			
+		);
+	</script>
+	
+
+  </head>
+
+  <body>
+		<div>
+		<div data-role="header" style="width:320px;height:40px;background:#efebef">
+			<img style="width:320px;height:40px;" id="title_image" src="header.png" />
+		</div>
+		<div data-role="content" style="width:300px;height:400px">
+			<!-- Capture -->
+			<div id="capture" style="display:none">
+					
+					<fieldset class="ui-grid-a" style="width:290px;height:50px" >
+									<div class="ui-block-a"><button onclick="capturePhotoEdit();">Capture Photo</button></div>
+									<div class="ui-block-b"><button id="send_image" onclick="val();">Send Image</button></div>	   
+					</fieldset>			
+					<div id="shipDiv" data-role="fieldcontain" style="width:270px;height:50px">  
+						<label for="shipNo">Image title</label>  
+						<div style="width:290px">
+							  <input id="shipNo" name="shipNo_r" type="text" />  
+						</div>
+					</div> 	
+					<div style="margin-left:10px auto">
+						<img style="width:290px;height:260px;" id="smallImage" src="moden.jpg" />
+					</div>
+			</div>
+			
+			<!-- Gallery -->
+			<div id="gallery" style="display:none">						
+					<fieldset class="ui-grid-a" style="width:290px;height:50px" >
+									<div class="ui-block-a"><button onclick="getPhoto(pictureSource.SAVEDPHOTOALBUM);">Choice Image</button></div>
+									<div class="ui-block-b"><button id="send_image" onclick="val();">Send Image</button></div>	   
+					</fieldset>			
+					<div id="shipDiv" data-role="fieldcontain" style="width:270px;height:50px">  
+						<label for="shipNo">Image title</label>  
+						<div style="width:290px">
+							  <input id="shipNo" name="shipNo_r" type="text" />  
+						</div>
+					</div> 		
+					<div style="width:290px;height:300px;">
+						<img style="width:290px;height:260px;" id="largeImage" src="moden.jpg" />
+					</div>
+					
+			</div>
+			
+			<!-- Account -->
+			<div id="account" style="display:none">
+					<!-- Login -->
+					<div id="login_form" style="display:none">						
+						<div class="ui-grid-b" style="height:50px">
+							<div class="ui-block-a"></div>
+							<div class="ui-block-b"><h2>Login</h2></div>
+							<div class="ui-block-c"></div>
+						</div><!-- /grid-b -->
+					
+						<form class="cmxform" id="_login_form" method="get" action="">										
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Account </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required" name="mypwd1" id="user" value="" /></div>	   
+								</fieldset>	
+										 
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Password </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="password" class="required" name="mypwd1" id="password" value="" /></div>	   
+								</fieldset>		
+								
+								 <fieldset class="ui-grid-a" style="width:290px" >
+									<div class="ui-block-a"><input type="button" id="register_button" value ="Create Account"/></div>
+									<div class="ui-block-b"><input type="button" id="login" class="submit" value="Login" onclick="check();"/></div>	   
+								</fieldset>					     
+								 
+						</form>		
+					</div>	
+					
+					<!-- Register -->
+					<div id="register_form" style="display:none">
+						<form class="cmxform" id="_account_form" method="get" action="">
+						
+								<fieldset style="height:70px;align:right " >
+									<div style="width:100px;align:right"><input type="button" data-theme="b"  value="Back" id="back_button"/>									
+									</div>									
+								</fieldset>	
+								
+								<div class="ui-grid-b" style="height:50px">
+									<div class="ui-block-a"></div>
+									<div class="ui-block-b"><h2>Register</h2></div>
+									<div class="ui-block-c"></div>
+								</div><!-- /grid-b -->
+										
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Account </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required" name="mypwd1" id="account_text" value="" /></div>	   
+								</fieldset>	
+								
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">E-mail</label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required email" name="email" id="UserEmail" value="" /></div>	   
+								</fieldset>	
+																
+								 <fieldset class="ui-grid-a" style="width:290px" >
+									<div class="ui-block-a"><input type="submit" class="submit" value ="Register"id="btn-submit" /></div>
+									<div class="ui-block-b"><input type="reset" id="login" value="Reset" onclick="check();"/></div>	   
+								</fieldset>					     
+								 
+						</form>							
+					</div>	
+
+					<!-- Choice Gallery -->
+					<div id="Choice_Gallery_form" style="display:none">
+						<form class="cmxform" id="_choice_gallery_form" method="get" action="">
+								
+								<div class="ui-grid-b" style="height:50px">
+									<div class="ui-block-a"></div>
+									<div class="ui-block-b"><h2>Register</h2></div>
+									<div class="ui-block-c"></div>
+								</div><!-- /grid-b -->
+										
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Account </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required" name="mypwd1" id="account_text" value="" /></div>	   
+								</fieldset>	
+								
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">E-mail</label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required email" name="email" id="UserEmail" value="" /></div>	   
+								</fieldset>	
+																
+								 
+						</form>							
+					</div>	  
+					
+			</div>	
+		</div>
+
+			<div data-role="footer" data-position="fixed"  >
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#" id="account_a" data-transition="fade" class="ui-btn-active">Login</a></li>
+						<li><a href="#" id="capture_a" data-transition="fade" >Capture Photo</a></li>
+						<li><a href="#" id="gallery_a" data-transition="fade">Photo Gallery</a></li>
+					</ul>				
+			  </div>			
+		</div>
+	</body>
+
+</html>

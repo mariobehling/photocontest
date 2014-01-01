@@ -1,0 +1,613 @@
+<!DOCTYPE HTML>
+
+<html>
+
+  <head>
+
+    <meta name="viewport" content="width=480;height:800;user-scalable=no" />
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+    <title>PhoneGap</title>
+		<link rel="stylesheet" href='jquery.mobile-1.0b2.min.css ' />
+		<link rel="stylesheet" href="../../themes/default/"/> 
+		<link rel="stylesheet"  href="jquery.mobile.scrollview.css" /> 
+		<link rel="stylesheet" href="../../docs/_assets/css/jqm-docs.css"/> 
+		<script src="jquery.mobile.scrollviews.js"></script>
+		<script src="jquery-1.6.2.min.js"></script>
+		<script src="jquery.mobile-1.0b2.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+        <script src="jquery.validate.min.js"></script>
+        <script src="jquery.validate.js"></script>
+        <script src="additional-methods.js"></script>
+        <script src="additional-methods.min.js"></script> 
+        <script type="text/javascript" src="json_decode.js"></script>
+        <script src="../../js/jquery.js"></script> 
+		<script src="js"></script> 
+		<script src="docs.js"></script> 
+		<script src="jquery.easing.1.3.js"></script> 
+		<script src="jquery.mobile.scrollview.js"></script> 
+   <script  type="text/javascript">
+    		function checkConnection() {
+		    var networkState = navigator.network.connection.type;
+		
+		    var states = {};
+		    states[Connection.UNKNOWN]  = 'Unknown connection';
+		    states[Connection.ETHERNET] = 'Ethernet connection';
+		    states[Connection.WIFI]     = 'WiFi connection';
+		    states[Connection.CELL_2G]  = 'Cell 2G connection';
+		    states[Connection.CELL_3G]  = 'Cell 3G connection';
+		    states[Connection.CELL_4G]  = 'Cell 4G connection';
+		    states[Connection.NONE]     = 'No network connection';
+		
+		    if(states[networkState]==states[Connection.NONE] || states[networkState]==states[Connection.UNKNOWN]){
+		        alert('Error on connection\nPlease check your internet connection.');
+		        return false;
+		    } else {		    	
+		        return true;    
+		    }
+		}
+    </script>
+  
+	
+	<script  type="text/javascript">
+		var username = '';
+		var pass;
+		var title_image_capture = "capturephoto";
+		var title_image_gallery = "gallery";
+		var nid = '0';
+		
+		function check() 
+		{		
+		  //alert('fsdf');
+		  checkConnection();
+		  username= $('#user').val();
+		  pass= $('#password').val();	
+		  
+			  $.get('http://mbmvn.dyndns.org/photocontest/?q=phonegap_login/'+username+'/'+pass,
+				  function(data)
+				  {
+					  //alert(data);
+						if(data=="1")
+						{
+							alert('Login successful!');
+							$('#Choice_Gallery_form').show();
+							$('#login_form').hide();
+							get_gallery() ;
+							$('#account_a').hide();
+							$('#select_gallery_choice').show();
+						}
+						else alert('Login fail!');
+				  });
+		}
+		
+		function get_gallery() 
+		{						
+			$.get('http://mbmvn.dyndns.org/photocontest/?q=select_gallery/'+username+'/'+pass,
+				function(data)
+				{									
+					var subgallery = data.substring(2);					
+					var object = jQuery.parseJSON(subgallery); 						
+					
+					//var selectlist = document.getElementById('opt_gallery');
+					var option = '';
+					var i=0;					
+					for(i=0;i<object.length;i++)
+					{
+						var _title = object[i].title;	
+						var _nid = object[i].nid;								
+						option += '<option value ='+_nid+'>' + _title + '</option>';
+					}			
+					$('#opt_gallery').html(option);	
+				}
+			);					
+		}
+		
+		
+		
+		function show_gallery() 
+		{		
+			nid = $('#opt_gallery').val();				
+			$.get('http://mbmvn.dyndns.org/photocontest/?q=show_gallery/'+username+'/'+pass+'/'+nid,
+				function(data)
+				{			
+					//zalert(nid);						
+					var subgallery = data.substring(2);					
+					var object = jQuery.parseJSON(subgallery); 					
+					
+					var image = '';
+					var i=0;
+					var _i = 1;
+					var n_margin = "0px 0px 10px 0px";
+					var r_margin = "0px 0px 10px 10px";
+					var l_margin = "0px 10px 10px 0px";
+					for(i=0;i<object.length;i++)
+					{
+						//alert(object[i].nid);
+						var _filepath = object[i].image_path;
+						image += '<a href="#gallerypage" ><img src="http://mbmvn.dyndns.org/photocontest/' + _filepath + '" style="display:block;float: left;color: #fff;width: 90px;height: 90px;margin: ';
+						if (_i == 1)
+							image += l_margin;
+						else if (_i == 3)
+							{
+								image += r_margin;
+								_i = 0;
+							}
+						else
+							image += n_margin;
+						image += ';" /></a>';
+						//alert(image);
+						_i++;
+						//alert("http://192.168.1.200/phonegap/"+_filepath);
+					}			
+					$('#show_image').html(image);
+				}
+			);					
+		}		
+		
+		function value_show()
+		{
+			var vl = $('#opt_gallery').val();
+			alert(vl);
+		}	
+		$(document).ready(
+			function ()
+			{			
+				
+				//Show and hide
+				
+				$('#_login_form').validate();
+				$('#_account_form').validate();
+				$('#capture').hide();
+				$('#gallery').hide();
+				$('#account').show();
+				$('#login_form').show();			
+				
+				function sendImage(src) {
+		
+				// Set the image source [library || camera]
+				//src = (src == 'library') ? Camera.PictureSourceType.PHOTOLIBRARY : Camera.PictureSourceType.CAMERA;
+				//alert(src);
+				//return false;
+				
+				
+				
+				if(src == 'library')
+				{
+					src = Camera.PictureSourceType.PHOTOLIBRARY ;
+					
+					navigator.camera.getPicture(success_gallery, fail, {quality: 45, sourceType: src});
+					
+					// Successfully aquired image data -> base64 encoded string of the image file
+				
+					function success_gallery(imageData) {
+						
+					title_image_gallery = $('#title_gallery').val();
+					var url = 'http://mbmvn.dyndns.org/photocontest/?q=phonegap_upload';
+					var params = {image: imageData,user:username,pass:pass,title:title_image_gallery,nid:nid};
+					
+					// send the data
+						$.post(url, params, function(data) {
+							
+							// Display the selected image on send complete							
+							$('#gallery_image_show').attr('src', 'data:image/jpeg;base64,' + params['image']);
+							alert("Image "+data);
+							//alert(''+title_image_gallery);
+							//return false;
+						});
+					}
+					
+				}
+				else if(src == 'camera')
+				{
+					src = Camera.PictureSourceType.CAMERA;
+					
+					navigator.camera.getPicture(success_capturephoto, fail, {quality: 45, sourceType: src});
+					
+					// Successfully aquired image data -> base64 encoded string of the image file
+				
+					function success_capturephoto(imageData) {
+						
+					title_image_capture = $('#title_capturephoto').val();
+					var url = 'http://mbmvn.dyndns.org/photocontest/?q=phonegap_upload';
+					var params = {image: imageData,user:username,pass:pass,title:title_image_capture,nid:nid};
+					
+					// send the data
+						$.post(url, params, function(data) {
+							
+							// Display the selected image on send complete							
+							$('#capture_photo_show').attr('src', 'data:image/jpeg;base64,' + params['image']);
+							alert('Capture photo '+data);
+							//alert(''+title_image_capture);
+							//return false;
+						});
+					}
+				}
+				// Aquire the image -> Phonegap API
+				
+				
+				function fail(message) { alert(message); }
+				
+				
+			}
+			
+			$('#capture_photo_button').click(
+			function () 
+				{ 
+					sendImage($('#capture_photo_button').val());
+				}
+			); 
+			
+			$('#gallery_image_button').click(
+			function () 
+				{ 
+					sendImage($('#gallery_image_button').val());
+				}
+			); 
+			
+			$('#account_a').click(
+					function()
+					{
+						$('#account').show();
+						$('#capture').hide();
+						$('#gallery').hide();
+					}
+				);
+			$('#select_gallery_choice').click(
+					function()
+					{
+						$('#account').show();
+						$('#capture').hide();
+						$('#gallery').hide();
+					}
+				);
+				$('#capture_a').click(
+					function()
+					{
+						
+						$('#account').hide();
+						//$('#capture').show();
+						$('#gallery').hide();
+						if(username == '')
+						{
+							alert('Please login ');
+							$('#capture').hide();
+							$('#gallery').hide();
+						}
+						else
+						{
+							if(nid == '0')
+							{
+								alert('Please choice gallery !');
+								$('#capture').hide();
+								$('#gallery').hide();
+							}
+							else
+							{								
+								$('#capture').show();
+								//$('#gallery').show();
+							}
+						}
+					}
+				);
+				$('#gallery_a').click(
+					function()
+					{
+						$('#account').hide();
+						$('#capture').hide();
+						//$('#gallery').show();
+						if(username == '')
+						{
+							alert('Please login');
+							$('#capture').hide();
+							$('#gallery').hide();
+						}
+						else
+						{
+							if(nid == '0')
+							{
+								alert('Please choice gallery');
+								$('#capture').hide();
+								$('#gallery').hide();
+							}
+							else
+							{
+								//$('#capture').show();
+								$('#gallery').show();
+							}
+						}
+					}
+				);
+				
+				$('#register_button').click(
+					function()
+					{
+						$('#login_form').hide();
+						$('#register_form').show();						
+					}
+				);
+				
+				$('#back_button').click(
+					function()
+					{
+						$('#login_form').show();
+						$('#register_form').hide();						
+					}
+				);	
+				
+				
+			}
+			
+		);
+	</script>
+
+	
+
+	
+<script> 
+$("[ data-role=page]").live("pageshow", function(event) {
+	var $page = $(this);
+	$page.find("[data-scroll]:not(.ui-scrollview-clip)").each(function(){
+		var $this = $(this);
+		// XXX: Remove this check for ui-scrolllistview once we've
+		//      integrated list divider support into the main scrollview class.
+		if ($this.hasClass("ui-scrolllistview"))
+			$this.scrolllistview();
+		else
+		{
+			var st = $this.data("scroll") + "";
+			var paging = st && st.search(/^[xy]p$/) != -1;
+			var dir = st && st.search(/^[xy]/) != -1 ? st.charAt(0) : null;
+ 
+			var opts = {};
+			if (dir)
+				opts.direction = dir;
+			if (paging)
+				opts.pagingEnabled = true;
+ 
+			$this.scrollview(opts);
+		}
+	});
+ 
+	changeDelayFormElementClick();
+});
+ 
+function changeScrollMethod()
+{
+	var val = $("#s_method").val();
+	var $sv = $("#evtCatcher").scrollview("scrollTo", 0, 0);
+	if (val === "scroll") {
+		$sv.css("overflow", "scroll");
+	}
+	else {
+		$sv.css("overflow", "hidden");
+	}
+	$sv.data("scrollview").options.scrollMethod = val;
+}
+ 
+function changeDelayFormElementClick()
+{
+	$("#evtCatcher").data("scrollview").options.delayedClickEnabled = ($("#s_delay").val() === "yes");
+}
+ 
+var cb_hd_pd,
+    cb_hd_sp,
+    cb_hm_pd,
+    cb_hm_sp,
+    cb_hu_pd,
+    cb_hu_sp;
+ 
+var hd = $.mobile.scrollview.prototype._handleDragStart;
+var hm = $.mobile.scrollview.prototype._handleDragMove;
+var hu = $.mobile.scrollview.prototype._handleDragStop;
+ 
+function getDummyEvent(o)
+{
+	return { target: o.target, _pd: false, _sp: false, preventDefault: function(){ this._pd = true; }, stopPropagation: function(){ this._sp = true; }};
+}
+ 
+function updateEvent(e, cb_pd, cb_sp)
+{
+	if (cb_pd.checked)
+		e.preventDefault();
+	if (cb_sp.checked)
+		e.stopPropagation();
+}
+ 
+$.mobile.scrollview.prototype._handleDragStart = function(e,x,y)
+{
+	hd.call(this, getDummyEvent(e), x, y);
+	updateEvent(e, cb_hd_pd, cb_hd_sp);
+};
+ 
+$.mobile.scrollview.prototype._handleDragMove = function(e,x,y)
+{
+	hm.call(this, getDummyEvent(e), x, y);
+	updateEvent(e, cb_hm_pd, cb_hm_sp);
+};
+ 
+$.mobile.scrollview.prototype._handleDragStop = function(e)
+{
+	hu.call(this, getDummyEvent(e));
+	updateEvent(e, cb_hu_pd, cb_hu_sp);
+};
+ 
+$(function(){
+	cb_hd_pd = $("#cb_hd_pd")[0];
+	cb_hd_sp = $("#cb_hd_sp")[0];
+	cb_hm_pd = $("#cb_hm_pd")[0];
+	cb_hm_sp = $("#cb_hm_sp")[0];
+	cb_hu_pd = $("#cb_hu_pd")[0];
+	cb_hu_sp = $("#cb_hu_sp")[0];
+});
+	</script> 
+	
+
+  </head>
+
+  <body>
+		
+		<!--header-->
+		<div data-role="header" style="width:320px;height:40px;background:#efebef">
+			<img style="width:320px;height:40px;" id="title_image" src="header.png" />
+		</div>
+		
+		<!--content-->
+		<div data-role="content" style="width:300px;height:400px">
+			
+			<!-- Capture -->
+			<div id="capture" style="display:none;width:290px">					
+					<fieldset style="width:290px;height:50px" >
+							<button class="send-image" id="capture_photo_button" value="camera">Capture Photo and Send Image</button>
+					</fieldset>			
+					<div data-role="fieldcontain" style="width:270px;height:50px">  
+						<label>Image title</label>	
+						<div style="width:290px">
+							  <input id="title_capturephoto" class="required" name="title_capturephoto" type="text" value="Image title for capturephoto" /> 			
+						</div>
+					</div>
+					<div style="margin-left:10px auto">
+						<img style="width:290px;height:260px;" id="capture_photo_show" name="image_capture" src="moden.jpg" />
+					</div>
+			</div>
+			
+			<!-- Gallery -->
+			<div id="gallery" style="display:none;width:290px">					 
+						<fieldset  style="width:290px;height:50px" >									
+								<button class="send-image" id="gallery_image_button" value="library" >Choice Image and Send Image</button>
+						</fieldset>			
+						<div data-role="fieldcontain" style="width:270px;height:50px">  
+							<label>Image title</label>  
+							<div style="width:290px"> 
+								   <input id="title_gallery" class="required" name="title_gallery" type="text" value="Image title for gallery" /> 								 
+							</div>
+						</div> 		
+						<div style="margin-left:10px auto">
+							<img style="width:290px;height:260px;" id="gallery_image_show" name="image_gallery" src="moden.jpg" />
+						</div>		
+			</div>
+			
+			<!-- Account -->
+			<div id="account" style="display:none">
+				
+					<!-- Login -->
+					<div id="login_form" style="display:none">						
+						<div class="ui-grid-b" style="height:50px">
+							<div class="ui-block-a"></div>
+							<div class="ui-block-b"><h2>Login</h2></div>
+							<div class="ui-block-c"></div>
+						</div><!-- /grid-b -->
+						
+						<form class="cmxform" id="_login_form" method="get" action="">										
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Account </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required" name="mypwd1" id="user" value="" /></div>	   
+								</fieldset>	
+										 
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Password </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="password" class="required" name="mypwd1" id="password" value="" /></div>	   
+								</fieldset>		
+								
+								 <fieldset class="ui-grid-a" style="width:290px" >
+									<div class="ui-block-a"><input type="button" id="register_button" value ="Create Account"/></div>
+									<div class="ui-block-b"><input type="button" id="login" class="submit" value="Login" onclick="check();"/></div>	   
+								</fieldset>					     
+								 
+						</form>		
+						<div id="version"  >	
+						<table cellspacing=" 10" height="200">
+							<tr>
+								<td>
+										<div >Version 1.0</div>	
+										<div >Website : <a href="http://mbm.vn">MBM.VN</a></div>																
+										<div >Copyright by MBM International 2011 </div>
+										
+								</td>
+							</tr>
+						</table>
+						</div>	
+				</div>	
+					<!-- Register -->
+					<div id="register_form" style="display:none">
+						<form class="cmxform" id="_account_form" method="get" action="">
+						
+								<fieldset style="height:70px;align:right " >
+									<div style="width:100px;align:right"><input type="button" data-theme="b"  value="Back" id="back_button"/>									
+									</div>									
+								</fieldset>	
+								
+								<div class="ui-grid-b" style="height:50px">
+									<div class="ui-block-a"></div>
+									<div class="ui-block-b"><h2>Register</h2></div>
+									<div class="ui-block-c"></div>
+								</div><!-- /grid-b -->
+										
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">Account </label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required" name="mypwd1" id="account_text" value="" /></div>	   
+								</fieldset>	
+								
+								<fieldset class="ui-grid-a">
+									<div class="ui-block-a" style="width:80px"><label for="mypwd1">E-mail</label></div>
+									<div class="ui-block-b" style="width:200px"><input type="text" class="required email" name="email" id="UserEmail" value="" /></div>	   
+								</fieldset>	
+																
+								 <fieldset class="ui-grid-a" style="width:290px" >
+									<div class="ui-block-a"><input type="submit" class="submit" value ="Register"id="btn-submit" /></div>
+									<div class="ui-block-b"><input type="reset" id="login" value="Reset" onclick="check();"/></div>	   
+								</fieldset>					     
+								 
+						</form>							
+					</div>	
+
+					<!-- Choice Gallery -->
+					<div id="Choice_Gallery_form" style="display:none;width:290px">
+						<form class="cmxform" id="_choice_gallery_form" method="get" action="">	
+						<table data-scroll="true">
+								<tr>
+									<td>
+											<label for="opt1" class="select">Gallery Name</label>		
+											<!-- show listbox gallery -->	
+											<select name="opt1" id="opt_gallery" style="width:290px" onchange="show_gallery();">
+													<option selected="selected" value="0">Select Gallery</option>									
+											</select>								
+													<!-- show thumb gallery -->													
+													<div id="evtCatcher" data-scroll="y" style="width:290px"> 		
+														<div  data-role="fieldcontain" id="show_image" style="width:290px"> 													
+														</div>          
+													</div> 															
+									</td>
+								</tr>
+						</table>								
+						</form>							
+					</div>	 	
+					
+							
+			</div>	
+			</div>
+
+		</div>
+		
+		<!--footer-->
+		<div data-role="footer" data-position="fixed"  >
+				<div data-role="navbar">
+					<ul>
+						<li>
+							<a href="#" id="account_a" data-transition="fade" class="ui-btn-active">Login</a>
+							<a href="#" id="select_gallery_choice" style="display:none" data-transition="fade" class="ui-btn-active">Gallery</a>
+						</li>
+						<li><a href="#" id="capture_a" data-transition="fade" >Capture Photo</a></li>
+						<li><a href="#" id="gallery_a" data-transition="fade">Photo Gallery</a></li>
+					</ul>				
+			  </div>		
+		</div>
+		
+		
+		
+		
+		
+		
+	</body>
+
+</html>
